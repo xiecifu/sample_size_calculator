@@ -501,6 +501,20 @@ if "selected_id" not in st.session_state:
 
 st.set_page_config(page_title="公共卫生研究样本量计算软件 V1.0", layout="wide")
 
+# 注入百度统计代码
+baidu_tongji = """
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?38be9114db5a3298aa8ae53526815f3a";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+"""
+st.markdown(baidu_tongji, unsafe_allow_html=True)
+
 # ============================
 # 首页
 # ============================
