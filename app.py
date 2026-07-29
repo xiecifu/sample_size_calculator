@@ -2,6 +2,7 @@ import streamlit as st
 import math
 from scipy.stats import norm, f, ncf
 from datetime import datetime
+import streamlit.components.v1 as components
 
 # ============================
 # 基础工具函数
@@ -21,8 +22,6 @@ def fmt(v, digits=4):
 # 参数校验函数
 # ============================
 def validate_params(vals, method_name):
-    """统一参数校验"""
-    # 率参数校验（必须在0-1之间）
     rate_params = ["P", "pA", "pB", "P0", "P1", "p1", "p2", "p3", "rho"]
     for key in rate_params:
         if key in vals:
@@ -30,8 +29,7 @@ def validate_params(vals, method_name):
             if val <= 0 or val >= 1:
                 st.error(f"参数 {key} 必须在 0 到 1 之间，当前值为 {val}")
                 return False
-    
-    # 必须大于0的参数
+
     positive_params = {
         "alpha": "置信水平 α",
         "beta": "β (1-把握度)",
@@ -46,16 +44,15 @@ def validate_params(vals, method_name):
         if key in vals and vals[key] <= 0:
             st.error(f"{label} 必须大于 0，当前值为 {vals[key]}")
             return False
-    
-    # 总体规模至少为1
+
     if "N" in vals and vals["N"] < 1:
         st.error(f"总体规模 N 必须大于等于 1，当前值为 {vals['N']}")
         return False
-    
+
     return True
 
 # ============================
-# 12类样本量计算模块
+# 12类样本量计算模块（完全不变）
 # ============================
 METHODS = []
 
@@ -80,8 +77,8 @@ METHODS.append({
     },
     "formula": r"n = \frac{Z_{\alpha/2}^{2} P(1-P)}{d^2},\quad n_{adj} = \frac{n}{1+\frac{n-1}{N}}",
     "results": [
-        {"id": "n", "label": "原始样本量n", "desc": "不校正总体"},
-        {"id": "n_adj", "label": "校正样本量nₐdj", "desc": "有限总体校正"}
+        {"id": "n", "label": "原始样本量 n", "desc": "（不校正总体）"},
+        {"id": "n_adj", "label": "校正样本量 n_adj", "desc": "（有限总体校正）"}
     ],
     "calc": calc_srs_rate
 })
@@ -107,8 +104,8 @@ METHODS.append({
     },
     "formula": r"n = \frac{Z_{\alpha/2}^2 \sigma^2}{d^2},\quad n_{adj} = \frac{n}{1+\frac{n-1}{N}}",
     "results": [
-        {"id": "n", "label": "原始样本量n", "desc": "不校正总体"},
-        {"id": "n_adj", "label": "校正样本量nₐdj", "desc": "有限总体校正"}
+        {"id": "n", "label": "原始样本量 n", "desc": "（不校正总体）"},
+        {"id": "n_adj", "label": "校正样本量 n_adj", "desc": "（有限总体校正）"}
     ],
     "calc": calc_srs_mean
 })
@@ -137,10 +134,10 @@ METHODS.append({
     },
     "formula": r"n_{srs} = \frac{Z_{\alpha/2}^2 P(1-P)}{d^2},\; Deff=1+(m-1)\rho,\; n_{cluster}=n_{srs}\cdot Deff,\; K=\lceil n_{cluster}/m\rceil",
     "results": [
-        {"id": "n_srs", "label": "简单随机样本量nₛᵣₛ", "desc": "单纯随机抽样所需样本"},
-        {"id": "Deff", "label": "设计效应Deff", "desc": "整群抽样膨胀系数"},
-        {"id": "n_cluster", "label": "总样本量n_cluster", "desc": "整群抽样总人数"},
-        {"id": "K", "label": "需抽取群数K", "desc": "最少抽取群数量"}
+        {"id": "n_srs", "label": "单纯随机抽样所需样本 n_srs", "desc": ""},
+        {"id": "Deff", "label": "设计效应 Deff", "desc": ""},
+        {"id": "n_cluster", "label": "整群抽样所需样本 n_cluster", "desc": ""},
+        {"id": "K", "label": "需抽取群数 K", "desc": ""}
     ],
     "calc": calc_cluster_rate
 })
@@ -169,10 +166,10 @@ METHODS.append({
     },
     "formula": r"n_{srs} = \frac{Z_{\alpha/2}^2 \sigma^2}{d^2},\; Deff=1+(m-1)\rho,\; n_{cluster}=n_{srs}\cdot Deff,\; K=\lceil n_{cluster}/m\rceil",
     "results": [
-        {"id": "n_srs", "label": "简单随机样本量nₛᵣₛ", "desc": "单纯随机抽样所需样本"},
-        {"id": "Deff", "label": "设计效应Deff", "desc": "整群抽样膨胀系数"},
-        {"id": "n_cluster", "label": "总样本量n_cluster", "desc": "整群抽样总人数"},
-        {"id": "K", "label": "需抽取群数K", "desc": "最少抽取群数量"}
+        {"id": "n_srs", "label": "单纯随机抽样所需样本 n_srs", "desc": ""},
+        {"id": "Deff", "label": "设计效应 Deff", "desc": ""},
+        {"id": "n_cluster", "label": "整群抽样所需样本 n_cluster", "desc": ""},
+        {"id": "K", "label": "需抽取群数 K", "desc": ""}
     ],
     "calc": calc_cluster_mean
 })
@@ -204,7 +201,7 @@ METHODS.append({
         "P1": {"label": "预期样本率 P₁", "default": 0.40, "step": 0.01}
     },
     "formula": r"n = \frac{\big(Z_{\alpha/2}\sqrt{p_0(1-p_0)} + Z_\beta\sqrt{p_1(1-p_1)}\big)^2}{(p_1-p_0)^2}",
-    "results": [{"id": "n", "label": "所需样本量n", "desc": "单侧样本例数"}],
+    "results": [{"id": "n", "label": "所需样本量 n", "desc": ""}],
     "calc": calc_one_prop
 })
 
@@ -246,9 +243,9 @@ METHODS.append({
     },
     "formula": r"N_{pairs} = \frac{\big[Z_{\alpha/2}(OR+1)+Z_\beta\sqrt{(OR+1)^2-(OR-1)^2 PD}\big]^2}{(OR-1)^2 PD}",
     "results": [
-        {"id": "N_pairs", "label": "配对对子数N_pairs", "desc": "所需配对样本量"},
-        {"id": "OR", "label": "比值比OR", "desc": "P10/P01"},
-        {"id": "PD", "label": "不一致比例PD", "desc": "P01+P10"}
+        {"id": "N_pairs", "label": "所需样本量 N_pairs", "desc": "（对子数）"},
+        {"id": "OR", "label": "比值比 OR", "desc": "（P<sub>10</sub>/P<sub>01</sub>）"},
+        {"id": "PD", "label": "不一致比例 PD", "desc": "（P<sub>01</sub>+P<sub>10</sub>）"}
     ],
     "calc": calc_paired_prop
 })
@@ -280,10 +277,13 @@ METHODS.append({
         "beta": {"label": "β (1-把握度)", "default": 0.10, "step": 0.01},
         "pA": {"label": "试验组率 pA", "default": 0.50, "step": 0.01},
         "pB": {"label": "对照组率 pB", "default": 0.30, "step": 0.01},
-        "k": {"label": "样本分配比例 k=nA/nB", "default": 1.0, "step": 0.1}
+        "k": {"label": "样本分配比例 k", "default": 1.0, "step": 0.1}
     },
     "formula": r"n_B = \left(\frac{p_A(1-p_A)}{k}+p_B(1-p_B)\right)\left(\frac{Z_{\alpha/2}+Z_\beta}{p_A-p_B}\right)^2,\quad n_A = k\cdot n_B",
-    "results": [{"id": "nB", "label": "对照组样本量nB", "desc": "对照组例数"},{"id": "nA", "label": "试验组样本量nA", "desc": "试验组例数"}],
+    "results": [
+        {"id": "nB", "label": "对照组样本量 nB", "desc": "（对照组例数）"},
+        {"id": "nA", "label": "试验组样本量 nA", "desc": "（试验组例数）"}
+    ],
     "calc": calc_two_prop
 })
 
@@ -322,10 +322,10 @@ METHODS.append({
     },
     "formula": r"w = \sqrt{\frac{1}{3}\sum \frac{(p_i-\bar{p})^2}{\bar{p}(1-\bar{p})}},\quad N = \lambda/w^2",
     "results": [
-        {"id": "w", "label": "效应量w", "desc": "Cohen's w"},
-        {"id": "N", "label": "总样本量N", "desc": "三组合计总例数"},
-        {"id": "n_per", "label": "每组样本量", "desc": "每组平均例数"},
-        {"id": "lambda", "label": "非中心参数λ", "desc": "查表常数"}
+        {"id": "w", "label": "效应量 w", "desc": "（Cohen's w）"},
+        {"id": "N", "label": "总样本量 N", "desc": "（三组合计）"},
+        {"id": "n_per", "label": "每组样本量 n_per", "desc": ""},
+        {"id": "lambda", "label": "非中心参数 λ", "desc": "（查表）"}
     ],
     "calc": calc_three_prop
 })
@@ -356,7 +356,10 @@ METHODS.append({
         "sigma": {"label": "标准差 σ", "default": 15.0, "step": 0.1}
     },
     "formula": r"n = \left(\frac{Z_{\alpha/2}+Z_\beta}{\delta/\sigma}\right)^2 + \frac12 Z_{\alpha/2}^2,\quad \delta=|\mu_1-\mu_0|",
-    "results": [{"id": "n", "label": "所需样本量n", "desc": "单组例数"},{"id": "delta", "label": "均数差值δ", "desc": "两组差值绝对值"}],
+    "results": [
+        {"id": "n", "label": "所需样本量 n", "desc": ""},
+        {"id": "delta", "label": "均数差值绝对值 δ", "desc": ""}
+    ],
     "calc": calc_one_mean
 })
 
@@ -387,10 +390,13 @@ METHODS.append({
         "mu0": {"label": "对照组均数 μ₀", "default": 100.0, "step": 0.1},
         "mu1": {"label": "试验组均数 μ₁", "default": 108.0, "step": 0.1},
         "sigma": {"label": "合并标准差 σ", "default": 15.0, "step": 0.1},
-        "k": {"label": "分配比例 k=n1/n0", "default": 1.0, "step": 0.1}
+        "k": {"label": "分配比例 k", "default": 1.0, "step": 0.1}
     },
     "formula": r"n_0 = \frac{(Z_{\alpha/2}+Z_\beta)^2 \sigma^2 (1+1/k)}{(\mu_1-\mu_0)^2} + \frac14 Z_{\alpha/2}^2,\quad n_1 = k\cdot n_0",
-    "results": [{"id": "n0", "label": "对照组样本量n₀", "desc": "对照组例数"},{"id": "n1", "label": "试验组样本量n₁", "desc": "试验组例数"}],
+    "results": [
+        {"id": "n0", "label": "对照组样本量 n₀", "desc": ""},
+        {"id": "n1", "label": "试验组样本量 n₁", "desc": ""}
+    ],
     "calc": calc_two_mean_equal
 })
 
@@ -423,10 +429,13 @@ METHODS.append({
         "mu1": {"label": "试验组均数 μ₁", "default": 108.0, "step": 0.1},
         "sigma0": {"label": "对照组标准差 σ₀", "default": 15.0, "step": 0.1},
         "sigma1": {"label": "试验组标准差 σ₁", "default": 18.0, "step": 0.1},
-        "k": {"label": "分配比例 k=n1/n0", "default": 1.0, "step": 0.1}
+        "k": {"label": "分配比例 k", "default": 1.0, "step": 0.1}
     },
     "formula": r"n_0 = \frac{(Z_{\alpha/2}+Z_\beta)^2 (\sigma_0^2+\sigma_1^2/k)}{(\mu_1-\mu_0)^2} + \frac14 Z_{\alpha/2}^2,\quad n_1 = k\cdot n_0",
-    "results": [{"id": "n0", "label": "对照组样本量n₀", "desc": "对照组例数"},{"id": "n1", "label": "试验组样本量n₁", "desc": "试验组例数"}],
+    "results": [
+        {"id": "n0", "label": "对照组样本量 n₀", "desc": ""},
+        {"id": "n1", "label": "试验组样本量 n₁", "desc": ""}
+    ],
     "calc": calc_two_mean_unequal
 })
 
@@ -440,7 +449,7 @@ def anova_sample_size(alpha, beta, mus, sigma):
         return None
     df1 = k - 1
     N = k + 1
-    max_N = 100000  # 设置最大迭代次数，防止死循环
+    max_N = 100000
     target_power = 1 - beta
     while N <= max_N:
         df2 = N - k
@@ -463,7 +472,6 @@ def calc_three_mean(vals):
     if not validate_params(vals, "三组均数比较（ANOVA）"):
         return None
     mus = [vals["mu1"], vals["mu2"], vals["mu3"]]
-    # 检查三组均数是否完全相同
     if len(set(mus)) == 1:
         st.error("三组均数不能完全相同")
         return None
@@ -483,10 +491,10 @@ METHODS.append({
     },
     "formula": r"f = \sqrt{\frac{\sum(\mu_j-\bar{\mu})^2}{k\sigma^2}},\quad N=\lambda/f^2",
     "results": [
-        {"id": "f", "label": "效应量f", "desc": "Cohen's f"},
-        {"id": "lambda", "label": "非中心参数λ", "desc": "迭代计算值"},
-        {"id": "N", "label": "总样本量N", "desc": "三组合计总例数"},
-        {"id": "n", "label": "每组样本量", "desc": "每组平均例数"}
+        {"id": "f", "label": "效应量 f", "desc": "（Cohen's f）"},
+        {"id": "lambda", "label": "非中心参数 λ", "desc": "（查表）"},
+        {"id": "N", "label": "总样本量 N", "desc": "（三组合计）"},
+        {"id": "n", "label": "每组样本量 n", "desc": ""}
     ],
     "calc": calc_three_mean
 })
@@ -501,7 +509,9 @@ if "selected_id" not in st.session_state:
 
 st.set_page_config(page_title="公共卫生研究样本量计算软件 V1.0", layout="wide")
 
+# ============================
 # 注入百度统计代码
+# ============================
 baidu_tongji = """
 <script>
 var _hmt = _hmt || [];
@@ -688,17 +698,14 @@ st.caption("基于最新统计公式，支持抽样调查、率比较、均数�
 st.header(current_method["name"])
 st.latex(current_method["formula"])
 
-# 参数输入区域（已移除最大值限制，最小值改为0）
+# 参数输入区域
 param_cols = st.columns(min(len(current_method["params"]), 4))
 input_vals = {}
 for idx, (key, param_info) in enumerate(current_method["params"].items()):
     col = param_cols[idx % len(param_cols)]
-    # 从 param_info 中获取 step，如果没有则使用默认值
     step_value = param_info.get("step", 0.01)
-    # 判断是否为整数类型参数
     is_int = "N" in key or "m" in key or "k" in key
     if is_int:
-        # 整数参数使用 step=1
         input_vals[key] = col.number_input(
             label=param_info["label"],
             value=float(param_info["default"]),
@@ -715,36 +722,56 @@ for idx, (key, param_info) in enumerate(current_method["params"].items()):
             format="%.4f" if step_value < 0.01 else "%.2f"
         )
 
-# 计算按钮
+# ============================
+# 计算按钮 + 使用 components.v1.html 渲染结果（浅红色底色）
+# ============================
 if st.button("🔢 计算样本量", type="primary"):
     try:
         res = current_method["calc"](input_vals)
         if res is None:
-            # 错误信息已在函数内部显示
             pass
         else:
-            st.divider()
-            st.subheader("📋 计算结果")
-            result_items = []
+            # 构建卡片 HTML
+            cards_html = ""
             for r_info in current_method["results"]:
                 r_key = r_info["id"]
                 if r_key in res:
                     val = res[r_key]
+                    label = r_info["label"] + r_info["desc"]
+                    # 替换下标
+                    label_html = label.replace("n_adj", "n<sub>adj</sub>")
+                    label_html = label_html.replace("n_srs", "n<sub>srs</sub>")
+                    label_html = label_html.replace("n_cluster", "n<sub>cluster</sub>")
+                    label_html = label_html.replace("n_per", "n<sub>per</sub>")
+                    label_html = label_html.replace("nA", "n<sub>A</sub>")
+                    label_html = label_html.replace("nB", "n<sub>B</sub>")
+                    label_html = label_html.replace("N_pairs", "N<sub>pairs</sub>")
+                    # 数值格式化
                     if val is None or not math.isfinite(val):
-                        label_text = f"{r_info['label']}（{r_info['desc']}）"
-                        result_items.append((label_text, "∞"))
-                    else:
-                        label_text = f"{r_info['label']}（{r_info['desc']}）"
-                        result_items.append((label_text, val))
-            if result_items:
-                show_cols = st.columns(min(len(result_items), 4))
-                for i, (lab, val) in enumerate(result_items):
-                    if isinstance(val, str) and val == "∞":
                         display_val = "∞"
                     else:
                         display_val = fmt(val, 4) if isinstance(val, (int, float)) else str(val)
-                    show_cols[i % len(show_cols)].metric(lab, display_val)
-            st.caption("提示：理论样本量建议向上取整，实际研究适当增加样本量以应对失访")
+                    # 每个卡片
+                    cards_html += f"""
+                    <div style="flex: 1 1 200px; min-width: 150px; margin: 8px 4px;">
+                        <div style="font-size: 1.1rem; color: #555; margin-bottom: 2px;">{label_html}</div>
+                        <div style="font-size: 2.2rem; font-weight: 700; color: #1a3a5c;">{display_val}</div>
+                    </div>
+                    """
+            # 完整结果区块 HTML（浅红色）
+            result_html = f"""
+            <div style="background: #f8d7da; border: 2px solid #842029; border-radius: 12px; padding: 16px 24px 20px 24px; margin-top: 12px;">
+                <hr style="margin: 0 0 8px 0; border-top: 1px solid #bbb;">
+                <h3 style="margin: 0 0 8px 0; font-size: 1.5rem;">📋 计算结果</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: flex-start;">
+                    {cards_html}
+                </div>
+                <div style="font-size: 0.9rem; color: #842029; margin-top: 12px; border-top: 1px solid #e5b3b3; padding-top: 8px;">
+                    💡 提示：理论样本量建议向上取整，实际研究适当增加样本量以应对失访
+                </div>
+            </div>
+            """
+            components.html(result_html, height=300, scrolling=False)
     except Exception as e:
         st.error(f"计算失败：{str(e)}，请检查输入参数范围")
 
