@@ -612,25 +612,25 @@ if st.session_state.page == "home":
     st.stop()
 
 # ============================
-# 计算页面
+# 计算页面（保持原有配色，仅移动端修复文字颜色）
 # ============================
 st.markdown(
     """
     <style>
+    /* 侧边栏样式保持不变 */
     [data-testid="stSidebar"] {
         background-color: #1a3a5c !important;
         min-width:320px !important;
         max-width:320px !important;
     }
-    [data-testid="stSidebar"] * {
+    [data-testid="stSidebar"] .stTitle,
+    [data-testid="stSidebar"] .stSubheader,
+    [data-testid="stSidebar"] .stButton button {
         color: #ffffff !important;
     }
     [data-testid="stSidebar"] .stSubheader {
         color: #8ab4f8 !important;
         font-weight: 600 !important;
-    }
-    [data-testid="stSidebar"] .stTitle {
-        color: #ffffff !important;
     }
     [data-testid="stSidebar"] .stButton button {
         width:100%;
@@ -661,9 +661,56 @@ st.markdown(
     [data-testid="stSidebar"] .stButton button[kind="primary"]:hover {
         background-color: #3b82f6 !important;
     }
+
+    /* 主内容区背景 */
     .stApp {
         background:#f0f4f8 !important;
         background-image:none !important;
+    }
+
+    /* ===== 移动端适配 ===== */
+    @media only screen and (max-width: 768px) {
+        [data-testid="stSidebar"] {
+            min-width: 200px !important;
+            max-width: 280px !important;
+        }
+        section.main > div {
+            padding: 0.5rem 0.8rem !important;
+            /* 手机端确保文字深色，可读，同时不覆盖原有颜色层次 */
+            color: #1a3a5c !important;
+        }
+        .main-title {
+            font-size: 2.2rem !important;
+        }
+        .stButton button {
+            font-size: 1rem !important;
+            padding: 0.5rem 1rem !important;
+        }
+        .katex-display {
+            font-size: 1.0rem !important;
+            overflow-x: auto !important;
+            white-space: nowrap !important;
+        }
+        .row-widget.stColumns {
+            flex-wrap: wrap !important;
+        }
+        .row-widget.stColumns > div {
+            min-width: 45% !important;
+            flex: 1 1 auto !important;
+        }
+        /* 结果卡片在手机上堆叠 */
+        div[style*="display: flex; flex-wrap: wrap;"] {
+            flex-direction: column !important;
+            align-items: stretch !important;
+        }
+        div[style*="flex: 1 1 200px;"] {
+            flex: 1 1 100% !important;
+            min-width: 100% !important;
+        }
+        /* 卡片标签颜色在手机上更清晰 */
+        div[style*="flex: 1 1 200px;"] > div:first-child {
+            color: #333 !important;
+        }
     }
     </style>
     """,
@@ -699,13 +746,13 @@ st.header(current_method["name"])
 st.latex(current_method["formula"])
 
 # ============================
-# 参数输入区域（统一显示4位小数，并确保类型一致）
+# 参数输入区域（统一显示4位小数）
 # ============================
 param_cols = st.columns(min(len(current_method["params"]), 4))
 input_vals = {}
 for idx, (key, param_info) in enumerate(current_method["params"].items()):
     col = param_cols[idx % len(param_cols)]
-    step_value = float(param_info.get("step", 0.01))  # 强制转为浮点数
+    step_value = float(param_info.get("step", 0.01))
     input_vals[key] = col.number_input(
         label=param_info["label"],
         value=float(param_info["default"]),
@@ -754,7 +801,7 @@ if st.button("🔢 计算样本量", type="primary"):
             result_html = f"""
             <div style="background: #f8d7da; border: 2px solid #842029; border-radius: 12px; padding: 16px 24px 20px 24px; margin-top: 12px;">
                 <hr style="margin: 0 0 8px 0; border-top: 1px solid #bbb;">
-                <h3 style="margin: 0 0 8px 0; font-size: 1.5rem;">📋 计算结果</h3>
+                <h3 style="margin: 0 0 8px 0; font-size: 1.5rem; color: #1a3a5c;">📋 计算结果</h3>
                 <div style="display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: flex-start;">
                     {cards_html}
                 </div>
