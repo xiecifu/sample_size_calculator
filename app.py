@@ -510,20 +510,20 @@ if "selected_id" not in st.session_state:
 st.set_page_config(page_title="公共卫生研究样本量计算软件 V1.0", layout="wide")
 
 # ============================
-# 注入百度统计代码
+# 注入百度统计代码（使用 components.html，确保可靠执行）
 # ============================
-baidu_tongji = """
+baidu_tongji_html = """
 <script>
 var _hmt = _hmt || [];
 (function() {
   var hm = document.createElement("script");
   hm.src = "https://hm.baidu.com/hm.js?38be9114db5a3298aa8ae53526815f3a";
-  var s = document.getElementsByTagName("script")[0]; 
+  var s = document.getElementsByTagName("script")[0];
   s.parentNode.insertBefore(hm, s);
 })();
 </script>
 """
-st.markdown(baidu_tongji, unsafe_allow_html=True)
+components.html(baidu_tongji_html, height=0)
 
 # ============================
 # 首页
@@ -612,12 +612,12 @@ if st.session_state.page == "home":
     st.stop()
 
 # ============================
-# 计算页面（针对荣耀浏览器彻底修复白字问题）
+# 计算页面（包含移动端适配）
 # ============================
 st.markdown(
     """
     <style>
-    /* ===== 侧边栏样式 ===== */
+    /* 侧边栏样式 */
     [data-testid="stSidebar"] {
         background-color: #1a3a5c !important;
         min-width:320px !important;
@@ -662,47 +662,41 @@ st.markdown(
         background-color: #3b82f6 !important;
     }
 
-    /* ===== 主背景 ===== */
+    /* 主背景 */
     .stApp {
         background:#f0f4f8 !important;
         background-image:none !important;
     }
 
-    /* ===== 移动端适配（荣耀浏览器白字修复） ===== */
+    /* ===== 移动端适配 ===== */
     @media only screen and (max-width: 768px) {
-        /* 强制所有主内容文字为深色 */
+        /* 强制主内容文字深色，解决荣耀浏览器白字 */
         section.main > div,
         section.main > div *,
         .stApp .main > div,
         .stApp .main > div * {
             color: #1a3a5c !important;
         }
-        /* 侧边栏在手机上宽度自适应 */
         [data-testid="stSidebar"] {
             min-width: 200px !important;
             max-width: 280px !important;
         }
-        /* 主内容内边距减小 */
         section.main > div {
             padding: 0.5rem 0.6rem !important;
         }
-        /* 标题保持白色（首页使用） */
         .main-title {
             font-size: 2.2rem !important;
             color: #ffffff !important;
         }
-        /* 按钮样式 */
         .stButton button {
             font-size: 1rem !important;
             padding: 0.5rem 1rem !important;
         }
-        /* 公式滚动 */
         .katex-display {
             font-size: 0.9rem !important;
             overflow-x: auto !important;
             white-space: nowrap !important;
         }
-        /* 参数输入框布局 */
         .row-widget.stColumns {
             flex-wrap: wrap !important;
         }
@@ -710,11 +704,9 @@ st.markdown(
             min-width: 45% !important;
             flex: 1 1 auto !important;
         }
-        /* 结果组件 */
         .element-container iframe {
             max-width: 100% !important;
         }
-        /* 阻止暗色模式覆盖文字颜色 */
         .stApp {
             color-scheme: light !important;
         }
@@ -769,7 +761,7 @@ for idx, (key, param_info) in enumerate(current_method["params"].items()):
     )
 
 # ============================
-# 计算按钮 + 结果渲染
+# 计算按钮 + 结果展示
 # ============================
 if st.button("🔢 计算样本量", type="primary"):
     try:
