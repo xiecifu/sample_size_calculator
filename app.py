@@ -698,29 +698,21 @@ st.caption("基于最新统计公式，支持抽样调查、率比较、均数�
 st.header(current_method["name"])
 st.latex(current_method["formula"])
 
-# 参数输入区域
+# ============================
+# 参数输入区域（统一显示4位小数，并确保类型一致）
+# ============================
 param_cols = st.columns(min(len(current_method["params"]), 4))
 input_vals = {}
 for idx, (key, param_info) in enumerate(current_method["params"].items()):
     col = param_cols[idx % len(param_cols)]
-    step_value = param_info.get("step", 0.01)
-    is_int = "N" in key or "m" in key or "k" in key
-    if is_int:
-        input_vals[key] = col.number_input(
-            label=param_info["label"],
-            value=float(param_info["default"]),
-            min_value=0.0,
-            step=1.0,
-            format="%.0f"
-        )
-    else:
-        input_vals[key] = col.number_input(
-            label=param_info["label"],
-            value=float(param_info["default"]),
-            min_value=0.0,
-            step=step_value,
-            format="%.4f" if step_value < 0.01 else "%.2f"
-        )
+    step_value = float(param_info.get("step", 0.01))  # 强制转为浮点数
+    input_vals[key] = col.number_input(
+        label=param_info["label"],
+        value=float(param_info["default"]),
+        min_value=0.0,
+        step=step_value,
+        format="%.4f"
+    )
 
 # ============================
 # 计算按钮 + 使用 components.v1.html 渲染结果（浅红色底色）
@@ -746,7 +738,7 @@ if st.button("🔢 计算样本量", type="primary"):
                     label_html = label_html.replace("nA", "n<sub>A</sub>")
                     label_html = label_html.replace("nB", "n<sub>B</sub>")
                     label_html = label_html.replace("N_pairs", "N<sub>pairs</sub>")
-                    # 数值格式化
+                    # 数值格式化（保留4位小数）
                     if val is None or not math.isfinite(val):
                         display_val = "∞"
                     else:
