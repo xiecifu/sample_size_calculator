@@ -238,8 +238,8 @@ METHODS.append({
     "params": {
         "alpha": {"label": "置信水平 α", "default": 0.05, "step": 0.001},
         "beta": {"label": "β (1-把握度)", "default": 0.10, "step": 0.001},
-        "P01": {"label": "P₀₁ (阴性转阳性)", "default": 0.10, "step": 0.001},
-        "P10": {"label": "P₁₀ (阳性转阴性)", "default": 0.05, "step": 0.001}
+        "P01": {"label": "P₀₁ (试验组阴性且对照组阳性)", "default": 0.10, "step": 0.001},
+        "P10": {"label": "P₁₀ (试验组阳性且对照组阴性)", "default": 0.05, "step": 0.001}
     },
     "formula": r"N_{pairs} = \frac{\big[Z_{\alpha/2}(OR+1)+Z_\beta\sqrt{(OR+1)^2-(OR-1)^2 PD}\big]^2}{(OR-1)^2 PD}",
     "results": [
@@ -510,7 +510,7 @@ if "selected_id" not in st.session_state:
 st.set_page_config(page_title="公共卫生研究样本量计算软件 V1.0", layout="wide")
 
 # ============================
-# 注入百度统计代码（使用 components.html，确保可靠执行）
+# 注入百度统计代码（使用 components.html）
 # ============================
 baidu_tongji_html = """
 <script>
@@ -612,7 +612,7 @@ if st.session_state.page == "home":
     st.stop()
 
 # ============================
-# 计算页面（包含移动端适配）
+# 计算页面
 # ============================
 st.markdown(
     """
@@ -813,6 +813,33 @@ if st.button("🔢 计算样本量", type="primary"):
     except Exception as e:
         st.error(f"计算失败：{str(e)}，请检查输入参数范围")
 
+# ============================
+# 参考文献（根据当前方法显示对应条目，序号统一为[1]）
+# ============================
+# 参考文献映射表（每个方法独立从[1]开始编号）
+ref_map = {
+    "srs_rate": "[1] Cochran WG. Sampling Techniques[M]. 3rd ed. New York: John Wiley & Sons, 1977: 72-86.",
+    "srs_mean": "[1] Cochran WG. Sampling Techniques[M]. 3rd ed. New York: John Wiley & Sons, 1977: 72-86.",
+    "cluster_rate": "[1] Donner A, Klar N. Design and Analysis of Cluster Randomization Trials in Health Research[M]. London: Arnold, 2000: 25-45.",
+    "cluster_mean": "[1] Donner A, Klar N. Design and Analysis of Cluster Randomization Trials in Health Research[M]. London: Arnold, 2000: 25-45.",
+    "one_prop": "[1] Fleiss JL, Levin B, Paik MC. Statistical Methods for Rates and Proportions[M]. 3rd ed. New York: John Wiley & Sons, 2003. doi:10.1002/0471445428.",
+    "paired_prop": "[1] Dupont WD, Plummer WD. Power and sample size calculations: a review and computer program[J]. Controlled Clinical Trials, 1990, 11(2): 116-128. doi:10.1016/0197-2456(90)90005-M.",
+    "two_prop": "[1] Dupont WD, Plummer WD. Power and sample size calculations: a review and computer program[J]. Controlled Clinical Trials, 1990, 11(2): 116-128. doi:10.1016/0197-2456(90)90005-M.",
+    "three_prop": "[1] Cohen J. Statistical Power Analysis for the Behavioral Sciences[M]. 2nd ed. Hillsdale, NJ: Lawrence Erlbaum Associates, 1988: 215-271.",
+    "one_mean": "[1] Cohen J. Statistical Power Analysis for the Behavioral Sciences[M]. 2nd ed. Hillsdale, NJ: Lawrence Erlbaum Associates, 1988: 27-65.",
+    "two_mean_equal": "[1] Satterthwaite FE. An approximate distribution of estimates of variance components[J]. Biometrics Bulletin, 1946, 2(6): 110-114. doi:10.2307/3002019.",
+    "two_mean_unequal": "[1] Satterthwaite FE. An approximate distribution of estimates of variance components[J]. Biometrics Bulletin, 1946, 2(6): 110-114. doi:10.2307/3002019.",
+    "three_mean": "[1] Cohen J. Statistical Power Analysis for the Behavioral Sciences[M]. 2nd ed. Hillsdale, NJ: Lawrence Erlbaum Associates, 1988: 273-406."
+}
+
+ref_text = ref_map.get(current_method["id"], "")
+if ref_text:
+    st.markdown("### 📖 参考文献")
+    st.markdown(ref_text)
+
+# ============================
+# 版权信息
+# ============================
 st.divider()
 current_year = datetime.now().year
 st.caption(f"© {current_year} 长沙市疾病预防控制中心 版权所有 · 开发人员：谢赐福 · Python+Streamlit")
