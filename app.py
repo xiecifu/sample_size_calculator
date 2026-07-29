@@ -612,12 +612,12 @@ if st.session_state.page == "home":
     st.stop()
 
 # ============================
-# 计算页面（保持原有配色，仅移动端修复文字颜色）
+# 计算页面（移动端全面优化）
 # ============================
 st.markdown(
     """
     <style>
-    /* 侧边栏样式保持不变 */
+    /* 侧边栏样式 */
     [data-testid="stSidebar"] {
         background-color: #1a3a5c !important;
         min-width:320px !important;
@@ -662,23 +662,29 @@ st.markdown(
         background-color: #3b82f6 !important;
     }
 
-    /* 主内容区背景 */
+    /* 主背景 */
     .stApp {
         background:#f0f4f8 !important;
         background-image:none !important;
     }
 
-    /* ===== 移动端适配 ===== */
+    /* ===== 移动端适配（全面优化） ===== */
     @media only screen and (max-width: 768px) {
+        /* 侧边栏在手机上占据较小宽度 */
         [data-testid="stSidebar"] {
             min-width: 200px !important;
             max-width: 280px !important;
         }
+        /* 主内容内边距减小 */
         section.main > div {
-            padding: 0.5rem 0.8rem !important;
-            /* 手机端确保文字深色，可读，同时不覆盖原有颜色层次 */
+            padding: 0.5rem 0.6rem !important;
+        }
+        /* 全局文字颜色强制深色（解决荣耀浏览器白字问题） */
+        section.main > div,
+        section.main > div *:not(h1):not(h2):not(h3) {
             color: #1a3a5c !important;
         }
+        /* 标题保持适当大小 */
         .main-title {
             font-size: 2.2rem !important;
         }
@@ -687,10 +693,11 @@ st.markdown(
             padding: 0.5rem 1rem !important;
         }
         .katex-display {
-            font-size: 1.0rem !important;
+            font-size: 0.9rem !important;
             overflow-x: auto !important;
             white-space: nowrap !important;
         }
+        /* 参数输入框布局 */
         .row-widget.stColumns {
             flex-wrap: wrap !important;
         }
@@ -698,18 +705,9 @@ st.markdown(
             min-width: 45% !important;
             flex: 1 1 auto !important;
         }
-        /* 结果卡片在手机上堆叠 */
-        div[style*="display: flex; flex-wrap: wrap;"] {
-            flex-direction: column !important;
-            align-items: stretch !important;
-        }
-        div[style*="flex: 1 1 200px;"] {
-            flex: 1 1 100% !important;
-            min-width: 100% !important;
-        }
-        /* 卡片标签颜色在手机上更清晰 */
-        div[style*="flex: 1 1 200px;"] > div:first-child {
-            color: #333 !important;
+        /* 结果组件卡片在手机上占满宽度 */
+        .element-container iframe {
+            max-width: 100% !important;
         }
     }
     </style>
@@ -762,7 +760,7 @@ for idx, (key, param_info) in enumerate(current_method["params"].items()):
     )
 
 # ============================
-# 计算按钮 + 使用 components.v1.html 渲染结果（浅红色底色）
+# 计算按钮 + 使用 components.v1.html 渲染结果（浅红色底色，移动端自适应）
 # ============================
 if st.button("🔢 计算样本量", type="primary"):
     try:
@@ -770,7 +768,7 @@ if st.button("🔢 计算样本量", type="primary"):
         if res is None:
             pass
         else:
-            # 构建卡片 HTML
+            # 构建卡片 HTML（内联样式已适应移动端）
             cards_html = ""
             for r_info in current_method["results"]:
                 r_key = r_info["id"]
@@ -790,19 +788,19 @@ if st.button("🔢 计算样本量", type="primary"):
                         display_val = "∞"
                     else:
                         display_val = fmt(val, 4) if isinstance(val, (int, float)) else str(val)
-                    # 每个卡片
+                    # 每个卡片（移动端flex方向改为column，宽度100%）
                     cards_html += f"""
                     <div style="flex: 1 1 200px; min-width: 150px; margin: 8px 4px;">
-                        <div style="font-size: 1.1rem; color: #555; margin-bottom: 2px;">{label_html}</div>
+                        <div style="font-size: 1.1rem; color: #333; margin-bottom: 2px;">{label_html}</div>
                         <div style="font-size: 2.2rem; font-weight: 700; color: #1a3a5c;">{display_val}</div>
                     </div>
                     """
             # 完整结果区块 HTML（浅红色）
             result_html = f"""
-            <div style="background: #f8d7da; border: 2px solid #842029; border-radius: 12px; padding: 16px 24px 20px 24px; margin-top: 12px;">
+            <div style="background: #f8d7da; border: 2px solid #842029; border-radius: 12px; padding: 16px 20px; margin-top: 12px; width: 100%; box-sizing: border-box;">
                 <hr style="margin: 0 0 8px 0; border-top: 1px solid #bbb;">
                 <h3 style="margin: 0 0 8px 0; font-size: 1.5rem; color: #1a3a5c;">📋 计算结果</h3>
-                <div style="display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: flex-start;">
+                <div style="display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: flex-start; width: 100%;">
                     {cards_html}
                 </div>
                 <div style="font-size: 0.9rem; color: #842029; margin-top: 12px; border-top: 1px solid #e5b3b3; padding-top: 8px;">
@@ -810,7 +808,8 @@ if st.button("🔢 计算样本量", type="primary"):
                 </div>
             </div>
             """
-            components.html(result_html, height=300, scrolling=False)
+            # 使用 components.html 显示，高度自适应
+            components.html(result_html, height=350, scrolling=True)
     except Exception as e:
         st.error(f"计算失败：{str(e)}，请检查输入参数范围")
 
