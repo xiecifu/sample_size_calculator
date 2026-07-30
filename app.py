@@ -287,7 +287,7 @@ METHODS.append({
     "calc": calc_two_prop
 })
 
-# 8. 三组率比较
+# 8. 三组率比较（卡方）
 def calc_three_prop(vals):
     if not validate_params(vals, "三组率比较（卡方）"):
         return None
@@ -323,9 +323,9 @@ METHODS.append({
     "formula": r"w = \sqrt{\frac{1}{3}\sum \frac{(p_i-\bar{p})^2}{\bar{p}(1-\bar{p})}},\quad N = \lambda/w^2",
     "results": [
         {"id": "w", "label": "效应量 w", "desc": "（Cohen's w）"},
+        {"id": "lambda", "label": "非中心参数 λ", "desc": "（查表）"},
         {"id": "N", "label": "总样本量 N", "desc": "（三组合计）"},
-        {"id": "n_per", "label": "每组样本量 n_per", "desc": ""},
-        {"id": "lambda", "label": "非中心参数 λ", "desc": "（查表）"}
+        {"id": "n_per", "label": "每组样本量 n_per", "desc": ""}
     ],
     "calc": calc_three_prop
 })
@@ -492,7 +492,7 @@ METHODS.append({
     "formula": r"f = \sqrt{\frac{\sum(\mu_j-\bar{\mu})^2}{k\sigma^2}},\quad N=\lambda/f^2",
     "results": [
         {"id": "f", "label": "效应量 f", "desc": "（Cohen's f）"},
-        {"id": "lambda", "label": "非中心参数 λ", "desc": "（查表）"},
+        {"id": "lambda", "label": "非中心参数 λ", "desc": "（迭代）"},  # 已修改为“迭代”
         {"id": "N", "label": "总样本量 N", "desc": "（三组合计）"},
         {"id": "n", "label": "每组样本量 n", "desc": ""}
     ],
@@ -816,7 +816,6 @@ if st.button("🔢 计算样本量", type="primary"):
 # ============================
 # 参考文献（根据当前方法显示对应条目，序号统一为[1]）
 # ============================
-# 参考文献映射表（每个方法独立从[1]开始编号）
 ref_map = {
     "srs_rate": "[1] Cochran WG. Sampling Techniques[M]. 3rd ed. New York: John Wiley & Sons, 1977: 72-86.",
     "srs_mean": "[1] Cochran WG. Sampling Techniques[M]. 3rd ed. New York: John Wiley & Sons, 1977: 72-86.",
