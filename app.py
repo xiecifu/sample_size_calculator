@@ -492,7 +492,7 @@ METHODS.append({
     "formula": r"f = \sqrt{\frac{\sum(\mu_j-\bar{\mu})^2}{k\sigma^2}},\quad N=\lambda/f^2",
     "results": [
         {"id": "f", "label": "效应量 f", "desc": "（Cohen's f）"},
-        {"id": "lambda", "label": "非中心参数 λ", "desc": "（迭代）"},  # 已修改为“迭代”
+        {"id": "lambda", "label": "非中心参数 λ", "desc": "（迭代）"},
         {"id": "N", "label": "总样本量 N", "desc": "（三组合计）"},
         {"id": "n", "label": "每组样本量 n", "desc": ""}
     ],
@@ -612,33 +612,28 @@ if st.session_state.page == "home":
     st.stop()
 
 # ============================
-# 计算页面
+# 计算页面（侧边栏文字改为白色）
 # ============================
 st.markdown(
     """
     <style>
-    /* 侧边栏样式 */
+    /* ===== 侧边栏样式（所有文字白色） ===== */
     [data-testid="stSidebar"] {
         background-color: #1a3a5c !important;
         min-width:320px !important;
         max-width:320px !important;
     }
-    [data-testid="stSidebar"] .stTitle,
-    [data-testid="stSidebar"] .stSubheader,
-    [data-testid="stSidebar"] .stButton button {
+    /* 强制侧边栏所有文字白色 */
+    [data-testid="stSidebar"] * {
         color: #ffffff !important;
     }
-    [data-testid="stSidebar"] .stSubheader {
-        color: #8ab4f8 !important;
-        font-weight: 600 !important;
-    }
+    /* 侧边栏按钮样式 */
     [data-testid="stSidebar"] .stButton button {
         width:100%;
         text-align:left;
         padding: 8px 16px !important;
         white-space:nowrap;
         background-color: transparent !important;
-        color: #c0d0e0 !important;
         border: none !important;
         border-radius: 6px !important;
         font-weight: 400 !important;
@@ -647,12 +642,11 @@ st.markdown(
     }
     [data-testid="stSidebar"] .stButton button:hover {
         background-color: rgba(255,255,255,0.12) !important;
-        color: #ffffff !important;
     }
+    /* 选中状态按钮 */
     [data-testid="stSidebar"] .stButton button[data-baseweb="button"][kind="primary"],
     [data-testid="stSidebar"] .stButton button[kind="primary"] {
         background-color: #2563eb !important;
-        color: #ffffff !important;
         font-weight: 600 !important;
         border-radius: 6px !important;
         box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4) !important;
@@ -661,8 +655,12 @@ st.markdown(
     [data-testid="stSidebar"] .stButton button[kind="primary"]:hover {
         background-color: #3b82f6 !important;
     }
+    /* 侧边栏子标题（如“抽样调查”）字体加粗 */
+    [data-testid="stSidebar"] .stSubheader {
+        font-weight: 600 !important;
+    }
 
-    /* 主背景 */
+    /* ===== 主背景 ===== */
     .stApp {
         background:#f0f4f8 !important;
         background-image:none !important;
